@@ -18,6 +18,8 @@ public class CategoriesConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(t => t.Name)
             .IsRequired()
             .HasMaxLength(50);
+        
+        builder.HasIndex(t => new { t.UserId, t.Name }).IsUnique();
 
         builder.HasOne(t => t.User)
             .WithMany(t => t.Categories)

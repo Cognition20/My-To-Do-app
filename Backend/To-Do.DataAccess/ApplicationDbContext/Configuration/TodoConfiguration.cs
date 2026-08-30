@@ -30,6 +30,7 @@ public class TodoConfiguration : IEntityTypeConfiguration<ToDo>
             .IsRequired();
 
         builder.HasIndex(t => t.UserId);
+        builder.HasIndex(t => t.CategoryId);
         
         builder.HasOne(t => t.User)
             .WithMany(u => u.ToDos)
@@ -39,7 +40,7 @@ public class TodoConfiguration : IEntityTypeConfiguration<ToDo>
         builder.HasOne(t => t.Category)
             .WithMany(c => c.ToDos)
             .HasForeignKey(t => t.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);;
+            .OnDelete(DeleteBehavior.ClientSetNull);;
         
     }
 }

@@ -22,7 +22,7 @@ namespace To_Do.DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("To_Do.DataAccess.Models.Categorie", b =>
+            modelBuilder.Entity("To_Do.DataAccess.Models.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -38,7 +38,9 @@ namespace To_Do.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Name")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Categories", (string)null);
                 });
@@ -49,7 +51,7 @@ namespace To_Do.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -67,7 +69,7 @@ namespace To_Do.DataAccess.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("UserId")
@@ -104,14 +106,16 @@ namespace To_Do.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email");
+                    b.HasIndex("Email")
+                        .IsUnique();
 
-                    b.HasIndex("Login");
+                    b.HasIndex("Login")
+                        .IsUnique();
 
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("To_Do.DataAccess.Models.Categorie", b =>
+            modelBuilder.Entity("To_Do.DataAccess.Models.Category", b =>
                 {
                     b.HasOne("To_Do.DataAccess.Models.User", "User")
                         .WithMany("Categories")
@@ -123,11 +127,9 @@ namespace To_Do.DataAccess.Migrations
 
             modelBuilder.Entity("To_Do.DataAccess.Models.ToDo", b =>
                 {
-                    b.HasOne("To_Do.DataAccess.Models.Categorie", "Category")
+                    b.HasOne("To_Do.DataAccess.Models.Category", "Category")
                         .WithMany("ToDos")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("To_Do.DataAccess.Models.User", "User")
                         .WithMany("ToDos")
@@ -140,7 +142,7 @@ namespace To_Do.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("To_Do.DataAccess.Models.Categorie", b =>
+            modelBuilder.Entity("To_Do.DataAccess.Models.Category", b =>
                 {
                     b.Navigation("ToDos");
                 });
