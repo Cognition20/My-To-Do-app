@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ErrorOr;
+using Microsoft.EntityFrameworkCore;
 using To_Do.DataAccess.ApplicationDbContext;
 using To_Do.DataAccess.Models;
 using To_Do.DataAccess.Repositories.Interfaces;
@@ -15,37 +16,67 @@ public class ToDoRepository(AppDbContext dbContext) : IToDoRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<ToDo>> GetAllAsync()
+    public async Task<ToDo?> GetByIdAsync(Guid userId, Guid id)
     {
-        return await _dbContext.ToDos.AsNoTracking().ToListAsync();
-        
+        return await _dbContext.ToDos
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
     }
 
-    public async Task<List<ToDo>> GetByCategoryAsync(Guid categoryId)
+    public async Task<(List<ToDo> Items, int TotalCount)> GetAllAsync(Guid userId, int pageNumber, int pageSize)
     {
-        var toDos = await _dbContext.ToDos.Where(t => t.CategoryId == categoryId).ToListAsync();
-        return toDos;
+        var query = _dbContext.ToDos
+            .AsNoTracking()
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAtUtc);
+        
+        var totalCount = await query.CountAsync();
+        
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        
+        return (items, totalCount);
     }
 
-    public async Task<List<ToDo>> SearchAsync(string? search, Guid? categoryId)
+    public async Task<List<ToDo>> GetByCategoryAsync(Guid userId , Guid categoryId)
     {
-        var query = _dbContext.ToDos.AsQueryable();
+        return await _dbContext.ToDos
+            .AsNoTracking()
+            .Where(t => t.CategoryId == categoryId && t.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<(List<ToDo> Items, int TotalCount)>  
+        SearchAsync(Guid userId, string? categorySearch, Guid? categoryId, int pageNumber, int pageSize)
+    {
+        if (string.IsNullOrWhiteSpace(categorySearch) && !categoryId.HasValue)
+            return ([], 0);
         
-        if (!string.IsNullOrWhiteSpace(search))
+        var query = _dbContext.ToDos
+            .AsNoTracking()
+            .Include(t => t.Category)
+            .Where(t => t.UserId == userId);
+
+        if (!string.IsNullOrWhiteSpace(categorySearch))
         {
             query = query.Where(t =>
-                t.Title.Contains(search) ||
-                ( t.Description != null && t.Description.Contains(search)));
+                t.Category != null && t.Category.Name.Contains(categorySearch));
         }
 
         if (categoryId.HasValue)
         {
-            query = query.Where(x =>
-                x.CategoryId == categoryId.Value);
+            query = query.Where(t => t.CategoryId == categoryId.Value);
         }
+        var totalCount = await query.CountAsync();
+        
+        var items = await query
+            .OrderByDescending(t => t.CreatedAtUtc)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-        return await query.ToListAsync();
-
+        return (items, totalCount);
     }
 
     public async Task UpdateAsync(ToDo toDo)
@@ -55,11 +86,17 @@ public class ToDoRepository(AppDbContext dbContext) : IToDoRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(ToDo toDo)
+    public async Task<bool> DeleteAsync(Guid userId, Guid id)
     {
-        _dbContext.ToDos.Remove(toDo);
+        var task = await _dbContext.ToDos
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
+        if (task is null)
+            return false;
+
+        _dbContext.ToDos.Remove(task);
         await _dbContext.SaveChangesAsync();
-        
+
+        return true;
     }
 }

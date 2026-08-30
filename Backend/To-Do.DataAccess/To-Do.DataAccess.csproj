@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ErrorOr" Version="2.1.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.19">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

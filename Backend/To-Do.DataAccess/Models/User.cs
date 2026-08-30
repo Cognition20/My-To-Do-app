@@ -9,5 +9,4 @@ public class User
     public List<ToDo> ToDos { get; set; } = [];
     public List<Category> Categories { get; set; } = [];
 
-
 }
