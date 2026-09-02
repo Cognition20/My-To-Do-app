@@ -1,0 +1,40 @@
+<div class="h-screen bg-[#140423] flex flex-col">
+  <app-nav
+    [searchText]="searchText()"
+    (search)="onSearch($event)"
+  />
+
+  <div class="flex flex-1">
+    <app-aside
+      [selectedCategoryId]="selectedCategoryId()"
+      [searchText]="searchText()"
+      (categorySelected)="onCategorySelected($event)"
+      [categoryPageNumber]="categoryPageNumber()"
+      [categoryTotalPages]="categoryTotalPages()"
+      (categoryPageChanged)="onCategoryPageChanged($event)"
+      (deleted)="onCategoryDeleted()"
+      class="w-1/5"
+    />
+    <app-task-list
+      [tasks]="tasks()"
+      [isLoading]="isLoading()"
+      [selectedTaskId]="selectedTask()?.id ?? null"
+      [pageNumber]="pageNumber()"
+      [totalPages]="totalPages()"
+      (taskCreated)="loadTasks(1)"
+      (taskSelected)="selectedTask.set($event)"
+      (pageChanged)="onPageChanged($event)"
+      (tasksChanged)="onTaskChanged($event)"
+      class="w-2/5"
+    />
+    @if (selectedTask(); as task) {
+      <app-task-info
+        [task]="task"
+        (closed)="selectedTask.set(null)"
+        (deleted)="onTaskDeleted()"
+        (tasksChanged)="onTaskChanged($event)"
+        class="w-2/5"
+      />
+    }
+  </div>
+</div>
