@@ -1,0 +1,102 @@
+<main class="h-full flex flex-col p-6 bg-[#140423]">
+  <button (click)="showNewTaskInput.set(!showNewTaskInput())"
+          class="mb-3 w-1/2 bg-purple-800 text-white rounded-md py-2 font-medium
+          hover:bg-purple-600 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50
+           transition-all duration-200">
+    New Task
+  </button>
+
+  @if (showNewTaskInput()) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <form [formGroup]="form" (ngSubmit)="createTask()"
+            (click)="$event.stopPropagation()"
+            class="bg-gray-800 rounded-md p-6 space-y-4 w-full max-w-md">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-white">New Task</h3>
+          <button type="button" (click)="showNewTaskInput.set(false)"
+                  class="text-gray-400 hover:text-white text-xl leading-none">
+            ×
+          </button>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-white">Title</label>
+          <input formControlName="title" placeholder="Your Title..." type="text"
+                 class="mt-1 w-full rounded-md border text-amber-50 border-purple-800 px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-white">Description</label>
+          <input formControlName="description" placeholder="Describe your Task..." type="text"
+                 class="mt-1 w-full rounded-md border text-amber-50 border-purple-800 px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-white">Category</label>
+          <select formControlName="categoryId" class="mt-1 w-full rounded-md border text-amber-50 border-purple-800 px-3 py-2">
+            <option [ngValue]="null" class="bg-gray-500">No category</option>
+            @for (category of categories(); track category.id) {
+              <option [ngValue]="category.id" class="bg-gray-500">{{ category.name }}</option>
+            }
+          </select>
+        </div>
+
+        @if (errorMessage()) {
+          <p class="text-red-600 text-sm">{{ errorMessage() }}</p>
+        }
+
+        <button type="submit"
+                [disabled]="form.invalid"
+                class="mb-3 w-1/2 bg-purple-800 text-white rounded-md py-2 font-medium
+              hover:bg-purple-600 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50
+               transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100">
+          Create Task
+        </button>
+      </form>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <p class="text-gray-500">Loading...</p>
+  } @else if (tasks().length === 0) {
+    <p class="text-gray-500">No tasks found.</p>
+  } @else {
+    <ul class="space-y-2 flex-1">
+      @for (task of tasks(); track task.id) {
+        <li  (click)="selectTask(task)"
+             class="bg-white rounded-md p-4 shadow-sm flex items-center justify-between"
+             [class.ring-2]="selectedTaskId() === task.id"
+             [class.ring-purple-500]="selectedTaskId() === task.id">
+          <div>
+            <p class="font-medium" [class.line-through]="task.isCompleted">{{ task.title }}</p>
+            @if (task.description) {
+              <p class="text-sm text-gray-500">{{ task.description | slice: 0 : 20 }}{{ task.description.length > 30 ? '...' : '' }}</p>
+            }
+            <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs bg-purple-100 text-purple-800 rounded-full px-2 py-0.5">
+                  {{ task.categoryName}}
+                </span>
+
+              <span class="text-xs text-gray-400">
+                {{ task.createdAt | date: 'MMM d, y, h:mm a' }}
+              </span>
+            </div>
+          </div>
+          <div (click)="$event.stopPropagation()" class="flex items-center gap-2 mt-1">
+            <label>{{ task.isCompleted ? 'Completed': 'Pending' }}</label>
+            <input type="checkbox"
+                   [checked]="task.isCompleted"
+                   (change)="toggleCompleted(task, $event)"
+                   class="w-5 h-5 accent-purple-600 cursor-pointer" />
+          </div>
+        </li>
+      }
+    </ul>
+    <div >
+      <app-pagination class=" w-full flex  justify-center pb-6"
+        [pageNumber]="pageNumber()"
+        [totalPages]="totalPages()"
+        (pageChanged)="pageChanged.emit($event)"
+      />
+    </div>
+  }
+
+</main>
+

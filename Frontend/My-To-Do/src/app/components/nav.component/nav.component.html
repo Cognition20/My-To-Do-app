@@ -1,0 +1,24 @@
+<nav class="bg-purple-900 text-white px-6 py-3 flex items-center justify-between">
+  <span class="text-lg font-semibold">To-Do</span>
+
+  <input
+    type="text"
+    [value]="searchText()"
+    placeholder="Search by category..."
+    class="rounded-md bg-gray-300 px-3 py-1.5 text-gray-900 w-64 focus:outline-none focus:ring-2 focus:ring-purple-400"
+    #searchInput
+    (keyup.enter)="onSearch(searchInput.value)"
+  />
+
+  <div class="flex items-center gap-4">
+    @if (authService.isAuthenticated()) {
+      <span class="text-sm">{{ authService.user()?.login }}</span>
+      <button (click)="logout()" class="bg-purple-700 hover:bg-purple-600 px-3 py-1.5 rounded-md text-sm transition-colors">
+        Log out
+      </button>
+    } @else {
+      <a routerLink="/login" class="hover:underline text-sm">Log in</a>
+      <a routerLink="/register" class="hover:underline text-sm">Register</a>
+    }
+  </div>
+</nav>
