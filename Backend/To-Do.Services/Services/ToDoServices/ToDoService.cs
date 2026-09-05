@@ -59,16 +59,16 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
     public async Task<ErrorOr<PagedResponse<TaskResponse>>> GetBySearch(SearchTaskRequest request)
     {
         var pageNumber = Math.Max(1, request.PageNumber);
-        var pageSize = Math.Clamp(request.PageSize, 1, MaxPageSize);
+        var pageSize = request.PageSize;
         
         var (items, totalCount) = await toDoRepository.SearchAsync(currentUserId.UserId, request.CategoryName, request.CategoryId, request.PageNumber, request.PageSize);
         
         return new PagedResponse<TaskResponse>(
             items.ToResponseList().ToList(),
-            request.PageNumber,
-            request.PageSize,
+            pageNumber,
+            pageSize,
             totalCount,
-            (int)Math.Ceiling(totalCount / (double)request.PageSize));
+            (int)Math.Ceiling(totalCount / (double)pageSize));
     }
 
     public async Task<ErrorOr<TaskResponse>> Update(UpdateTaskRequest request, Guid taskId)
@@ -76,7 +76,7 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
         var task = await toDoRepository.GetByIdAsync(currentUserId.UserId, taskId);
 
         if (task is null || task.UserId != currentUserId.UserId)
-            return Errors.ToDo.NotFound(taskId);
+            return Errors.ToDo.NotFound();
 
         if (request.CategoryId.HasValue)
         {
@@ -89,6 +89,7 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
         task.Description = request.Description;
         task.CategoryId = request.CategoryId;
         task.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        task.IsCompleted = request.IsCompleted ?? false;
 
         await toDoRepository.UpdateAsync(task);
 
@@ -101,7 +102,7 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
         var deleted = await toDoRepository.DeleteAsync(currentUserId.UserId, id);
 
         if (!deleted)
-            return Errors.ToDo.NotFound(id);
+            return Errors.ToDo.NotFound();
 
         return Result.Deleted;
     }

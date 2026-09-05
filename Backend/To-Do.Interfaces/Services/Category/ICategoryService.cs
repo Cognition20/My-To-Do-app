@@ -9,5 +9,5 @@ public interface ICategoryService
     Task<ErrorOr<CategoryResponse>> Create(CategoryRequest categoryRequest);
     Task<ErrorOr<CategoryResponse>> Update(Guid id, CategoryRequest categoryRequest);
     Task<ErrorOr<Deleted>> Delete(Guid id);
-    Task<ErrorOr<List<CategoryResponse>>> GetAll();
+    Task<ErrorOr<PagedResponse<CategoryResponse>>> GetAll(int pageNumber, int pageSize);
 }

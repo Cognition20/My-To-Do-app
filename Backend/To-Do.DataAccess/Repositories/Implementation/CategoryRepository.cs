@@ -49,12 +49,20 @@ public class CategoryRepository(AppDbContext dbContext) : ICategoryRepository
         return true;
     }
 
-    public async Task<List<Category>> GetAllAsync(Guid userId)
+    public async Task<(List<Category> Items, int TotalCount)> GetAllAsync(Guid userId, int pageNumber, int pageSize)
     {
-        return await _dbContext.Categories
+        var query = _dbContext.Categories
             .AsNoTracking()
-            .Where(x => x.UserId == userId)
+            .Where(t => t.UserId == userId);
+        
+        var totalCount = await query.CountAsync();
+        
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+        
+        return (items, totalCount);
     }
 
     public async Task<Category?> GetByIdAsync(Guid id)

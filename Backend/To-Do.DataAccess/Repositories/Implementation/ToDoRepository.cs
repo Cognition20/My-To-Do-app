@@ -32,6 +32,7 @@ public class ToDoRepository(AppDbContext dbContext) : IToDoRepository
         var totalCount = await query.CountAsync();
         
         var items = await query
+            .Include(t => t.Category)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -50,8 +51,8 @@ public class ToDoRepository(AppDbContext dbContext) : IToDoRepository
     public async Task<(List<ToDo> Items, int TotalCount)>  
         SearchAsync(Guid userId, string? categorySearch, Guid? categoryId, int pageNumber, int pageSize)
     {
-        if (string.IsNullOrWhiteSpace(categorySearch) && !categoryId.HasValue)
-            return ([], 0);
+       /* if (string.IsNullOrWhiteSpace(categorySearch) && !categoryId.HasValue)
+            return ([], 0);*/
         
         var query = _dbContext.ToDos
             .AsNoTracking()
