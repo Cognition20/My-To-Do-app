@@ -10,13 +10,11 @@ namespace To_Do.Services.Services.Authentication;
 
 public class JwtTokenGenerator(IOptions<JwtSettings> jwtSettings) : IJwtTokenGenerator
 {
-    private readonly IOptions<JwtSettings> _jwtSettings = jwtSettings;
-
     public string GenerateJwtToken(Guid userId, string login, string email)
     {
         var signingCredentials =  new SigningCredentials(
             new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.Value.Secret)),
+                Encoding.UTF8.GetBytes(jwtSettings.Value.Secret)),
                     SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -28,9 +26,9 @@ public class JwtTokenGenerator(IOptions<JwtSettings> jwtSettings) : IJwtTokenGen
         };
 
         var securityToken = new JwtSecurityToken(
-            issuer: _jwtSettings.Value.Issuer,
-            audience: _jwtSettings.Value.Audience,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.Value.ExpiryMinutes),
+            issuer: jwtSettings.Value.Issuer,
+            audience: jwtSettings.Value.Audience,
+            expires: DateTime.UtcNow.AddMinutes(jwtSettings.Value.ExpiryMinutes),
             claims: claims,
             signingCredentials: signingCredentials);
         

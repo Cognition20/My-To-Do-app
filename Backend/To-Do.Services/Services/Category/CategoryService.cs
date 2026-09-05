@@ -12,9 +12,9 @@ namespace To_Do.Services.Services.Category;
 public class CategoryService(ICategoryRepository categoryRepository, ICurrentUserId currentUserId) : ICategoryService
 {
     private const int MaxPageSize = 25;
-    public async Task<ErrorOr<CategoryResponse>> Create(CategoryRequest categoryRequest)
+    public async Task<ErrorOr<CategoryResponse>> Create(CategoryRequest categoryRequest, CancellationToken cancellationToken)
     {
-        var isExists = await categoryRepository.GetByNameAsync(categoryRequest.Name, currentUserId.UserId);
+        var isExists = await categoryRepository.GetByNameAsync(categoryRequest.Name, currentUserId.UserId, cancellationToken);
 
         if (isExists is not null)
         {
@@ -28,31 +28,31 @@ public class CategoryService(ICategoryRepository categoryRepository, ICurrentUse
             UserId = currentUserId.UserId
         };
             
-        await categoryRepository.AddAsync(category);
+        await categoryRepository.AddAsync(category, cancellationToken);
 
         return category.ToResponse();
     }
 
-    public async Task<ErrorOr<CategoryResponse>> Update(Guid id, CategoryRequest categoryRequest)
+    public async Task<ErrorOr<CategoryResponse>> Update(Guid id, CategoryRequest categoryRequest, CancellationToken cancellationToken)
     {
-        var category = await categoryRepository.GetByIdAsync(id);
+        var category = await categoryRepository.GetByIdAsync(id,cancellationToken);
         
         if (category is null || category.UserId != currentUserId.UserId)
             return Errors.Category.NotFound(id);
         
-        var duplicate = await categoryRepository.GetByNameAsync(categoryRequest.Name, currentUserId.UserId);
+        var duplicate = await categoryRepository.GetByNameAsync(categoryRequest.Name, currentUserId.UserId, cancellationToken);
         if (duplicate is not null && duplicate.Id != id)
             return Errors.Category.AlreadyExists(categoryRequest.Name);
         
         category.Name = categoryRequest.Name;
         
-        await categoryRepository.UpdateAsync(category);
+        await categoryRepository.UpdateAsync(category, cancellationToken);
         return category.ToResponse();
     }
 
-    public async Task<ErrorOr<Deleted>> Delete(Guid id)
+    public async Task<ErrorOr<Deleted>> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await categoryRepository.DeleteAsync(currentUserId.UserId, id);
+        var deleted = await categoryRepository.DeleteAsync(currentUserId.UserId, id, cancellationToken);
         
         if (!deleted)
             return Errors.Category.NotFound(id);
@@ -60,12 +60,12 @@ public class CategoryService(ICategoryRepository categoryRepository, ICurrentUse
         return Result.Deleted;
     }
 
-    public async Task<ErrorOr<PagedResponse<CategoryResponse>>> GetAll(int pageNumber, int pageSize)
+    public async Task<ErrorOr<PagedResponse<CategoryResponse>>> GetAll(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
         pageNumber = Math.Max(1, pageNumber);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
         
-        var (categories, totalCount) = await categoryRepository.GetAllAsync(currentUserId.UserId, pageNumber, pageSize);
+        var (categories, totalCount) = await categoryRepository.GetAllAsync(currentUserId.UserId, pageNumber, pageSize, cancellationToken);
 
         return new PagedResponse<CategoryResponse>(
             categories.ToResponseList().ToList(),

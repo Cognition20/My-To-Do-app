@@ -6,6 +6,6 @@ namespace To_Do.Interfaces.Services.Authentication;
 
 public interface IAuthenticationService
 {
-    Task<ErrorOr<AuthenticationResponse>> Register(RegisterRequest request);
-    Task<ErrorOr<AuthenticationResponse>>  Login(LoginRequest request);
+    Task<ErrorOr<AuthenticationResponse>> Register(RegisterRequest request,  CancellationToken cancellationToken);
+    Task<ErrorOr<AuthenticationResponse>>  Login(LoginRequest request,   CancellationToken cancellationToken);
 }

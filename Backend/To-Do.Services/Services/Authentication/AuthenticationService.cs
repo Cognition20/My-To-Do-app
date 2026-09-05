@@ -10,10 +10,10 @@ namespace To_Do.Services.Services.Authentication;
 
 public class AuthenticationService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator) : IAuthenticationService
 {
-    public async Task<ErrorOr<AuthenticationResponse>> Register(RegisterRequest request)
+    public async Task<ErrorOr<AuthenticationResponse>> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var userByLogin   = await userRepository.FindByLoginAsync(request.Login);
-        var userByEmail  = await userRepository.FindByEmailAsync(request.Email);
+        var userByLogin   = await userRepository.FindByLoginAsync(request.Login, cancellationToken);
+        var userByEmail  = await userRepository.FindByEmailAsync(request.Email , cancellationToken);
 
         if (userByLogin  is not null)
             return Errors.User.DuplicateLogin(request.Login);
@@ -31,7 +31,7 @@ public class AuthenticationService(IUserRepository userRepository, IPasswordHash
             PasswordHash = passwordHash
         };
 
-        await userRepository.AddAsync(user);
+        await userRepository.AddAsync(user, cancellationToken);
 
         var token = jwtTokenGenerator.GenerateJwtToken(
             user.Id,
@@ -45,9 +45,9 @@ public class AuthenticationService(IUserRepository userRepository, IPasswordHash
             token);
     }
 
-    public async Task<ErrorOr<AuthenticationResponse>> Login(LoginRequest request)
+    public async Task<ErrorOr<AuthenticationResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var user = await userRepository.FindByEmailAsync(request.Email);
+        var user = await userRepository.FindByEmailAsync(request.Email, cancellationToken);
 
         if (user is null)
             return Errors.Authentication.InvalidCredentials;

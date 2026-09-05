@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace To_Do.Interfaces.Services.Authentication;
+﻿namespace To_Do.Interfaces.Services.Authentication;
 
 public interface IJwtTokenGenerator
 {

@@ -12,7 +12,7 @@ public class AuthenticationController(IAuthenticationService authenticationServi
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest registerRequest, CancellationToken cancellationToken)
     {
-        var result = await authenticationService.Register(registerRequest);
+        var result = await authenticationService.Register(registerRequest, cancellationToken);
         
         return result.Match(
             authResult => Ok(authResult),
@@ -22,7 +22,7 @@ public class AuthenticationController(IAuthenticationService authenticationServi
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest loginRequest, CancellationToken cancellationToken)
     {
-        var result = await authenticationService.Login(loginRequest);
+        var result = await authenticationService.Login(loginRequest, cancellationToken);
         
         return result.Match(
             authResult => Ok(authResult),
