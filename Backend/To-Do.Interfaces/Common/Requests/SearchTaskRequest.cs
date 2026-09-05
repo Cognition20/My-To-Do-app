@@ -4,4 +4,4 @@ public record SearchTaskRequest(
     string? CategoryName,
     Guid? CategoryId,
     int PageNumber = 1,
-    int PageSize = 20);
+    int PageSize = 7);

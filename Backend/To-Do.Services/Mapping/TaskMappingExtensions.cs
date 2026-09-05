@@ -12,6 +12,7 @@ public static class TaskMappingExtensions
             task.Title,
             task.Description,
             task.CategoryId,
+            task.Category?.Name ?? "No category",
             task.CreatedAtUtc.ToLocalTime(),
             task.UpdatedAtUtc.HasValue ? task.UpdatedAtUtc.Value.ToLocalTime() : null,
             task.IsCompleted);

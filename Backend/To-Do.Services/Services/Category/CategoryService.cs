@@ -11,6 +11,7 @@ namespace To_Do.Services.Services.Category;
 
 public class CategoryService(ICategoryRepository categoryRepository, ICurrentUserId currentUserId) : ICategoryService
 {
+    private const int MaxPageSize = 25;
     public async Task<ErrorOr<CategoryResponse>> Create(CategoryRequest categoryRequest)
     {
         var isExists = await categoryRepository.GetByNameAsync(categoryRequest.Name, currentUserId.UserId);
@@ -59,10 +60,18 @@ public class CategoryService(ICategoryRepository categoryRepository, ICurrentUse
         return Result.Deleted;
     }
 
-    public async Task<ErrorOr<List<CategoryResponse>>> GetAll()
+    public async Task<ErrorOr<PagedResponse<CategoryResponse>>> GetAll(int pageNumber, int pageSize)
     {
-        var categories = await categoryRepository.GetAllAsync(currentUserId.UserId);
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+        
+        var (categories, totalCount) = await categoryRepository.GetAllAsync(currentUserId.UserId, pageNumber, pageSize);
 
-        return categories.ToResponseList().ToList();
+        return new PagedResponse<CategoryResponse>(
+            categories.ToResponseList().ToList(),
+            pageNumber,
+            pageSize,
+            totalCount,
+            (int)Math.Ceiling(totalCount / (double)pageSize));
     }
 }

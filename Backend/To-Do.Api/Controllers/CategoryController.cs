@@ -19,16 +19,16 @@ public class CategoryController(ICategoryService categoryService) : ApiControlle
     }
 
     [HttpGet("get")]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromQuery] int pageNumber, [FromQuery] int pageSize, CancellationToken cancellationToken)
     {
-        var result = await categoryService.GetAll();
+        var result = await categoryService.GetAll(pageNumber, pageSize);
                 
         return result.Match(
             getCategoryResult => Ok(getCategoryResult),
             errors => Problem(errors));
     }
     
-    [HttpPatch("{id:guid}")]
+    [HttpPatch("update/{id:guid}")]
     public async Task<IActionResult> Update(Guid id, CategoryRequest categoryRequest, CancellationToken cancellationToken)
     {
         var result = await categoryService.Update(id, categoryRequest);

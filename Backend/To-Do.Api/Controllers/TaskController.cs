@@ -8,7 +8,7 @@ namespace To_Do.Controllers;
 [Route("tasks")]
 public class TaskController(IToDoService toDoService) : ApiController
 {
-    [HttpGet("get")]
+    [HttpGet("getTasks")]
     public async Task<IActionResult> Get([FromQuery] int pageNumber, [FromQuery] int pageSize)
     {
         var result = await toDoService.GetAll(pageNumber, pageSize);
@@ -17,7 +17,8 @@ public class TaskController(IToDoService toDoService) : ApiController
             getTasksResult => Ok(getTasksResult),
             errors => Problem(errors));
     }
-    [HttpGet("byCat")]
+    
+    [HttpPost("search")]
     public async Task<IActionResult> GetByCategory(SearchTaskRequest searchTaskRequest, CancellationToken cancellationToken)
     {
         var result = await toDoService.GetBySearch(searchTaskRequest);
