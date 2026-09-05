@@ -11,7 +11,7 @@ public class CategoryController(ICategoryService categoryService) : ApiControlle
     [HttpPost("create")]
     public async Task<IActionResult> Create(CategoryRequest categoryRequest, CancellationToken cancellationToken)
     {
-        var result = await categoryService.Create(categoryRequest);
+        var result = await categoryService.Create(categoryRequest, cancellationToken);
         
         return result.Match(
             createCategoryResult => Ok(createCategoryResult),
@@ -21,7 +21,7 @@ public class CategoryController(ICategoryService categoryService) : ApiControlle
     [HttpGet("get")]
     public async Task<IActionResult> Get([FromQuery] int pageNumber, [FromQuery] int pageSize, CancellationToken cancellationToken)
     {
-        var result = await categoryService.GetAll(pageNumber, pageSize);
+        var result = await categoryService.GetAll(pageNumber, pageSize, cancellationToken);
                 
         return result.Match(
             getCategoryResult => Ok(getCategoryResult),
@@ -31,7 +31,7 @@ public class CategoryController(ICategoryService categoryService) : ApiControlle
     [HttpPatch("update/{id:guid}")]
     public async Task<IActionResult> Update(Guid id, CategoryRequest categoryRequest, CancellationToken cancellationToken)
     {
-        var result = await categoryService.Update(id, categoryRequest);
+        var result = await categoryService.Update(id, categoryRequest,  cancellationToken);
         
         return result.Match(
             updateCategoryResult => Ok(updateCategoryResult),
@@ -41,7 +41,7 @@ public class CategoryController(ICategoryService categoryService) : ApiControlle
     [HttpDelete("delete/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var result = await categoryService.Delete(id);
+        var result = await categoryService.Delete(id, cancellationToken);
         
         return result.Match(
             deleteCategoryResult => Ok(deleteCategoryResult),

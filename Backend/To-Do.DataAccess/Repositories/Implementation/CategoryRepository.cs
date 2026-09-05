@@ -2,37 +2,34 @@
 using To_Do.DataAccess.ApplicationDbContext;
 using To_Do.DataAccess.Models;
 using To_Do.DataAccess.Repositories.Interfaces;
-using To_Do.Interfaces.Common.Requests;
 
 namespace To_Do.DataAccess.Repositories.Implementation;
 
 public class CategoryRepository(AppDbContext dbContext) : ICategoryRepository
 {
-    private readonly AppDbContext _dbContext = dbContext;
-
-    public async Task<Category?> GetByNameAsync(string categoryName, Guid userId)
+    public async Task<Category?> GetByNameAsync(string categoryName, Guid userId, CancellationToken cancellationToken)
     {
-        return await _dbContext.Categories.FirstOrDefaultAsync(x => x.Name == categoryName && x.UserId == userId);
+        return await dbContext.Categories.FirstOrDefaultAsync(x => x.Name == categoryName && x.UserId == userId, cancellationToken);
     }
 
-    public async Task AddAsync(Category category)
+    public async Task AddAsync(Category category, CancellationToken cancellationToken)
     {
-        await _dbContext.Categories.AddAsync(category);
-        await _dbContext.SaveChangesAsync();
+        await dbContext.Categories.AddAsync(category, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Category category)
+    public async Task UpdateAsync(Category category, CancellationToken cancellationToken)
     {
-        _dbContext.Categories.Update(category);
+        dbContext.Categories.Update(category);
 
-        await _dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> DeleteAsync(Guid userId, Guid id)
+    public async Task<bool> DeleteAsync(Guid userId, Guid id, CancellationToken cancellationToken)
     {
-        var category = await _dbContext.Categories
+        var category = await dbContext.Categories
             .Include(c => c.ToDos)
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
 
         if (category is null)
             return false;
@@ -43,30 +40,31 @@ public class CategoryRepository(AppDbContext dbContext) : ICategoryRepository
             toDo.CategoryId = null;
         }
 
-        _dbContext.Categories.Remove(category);
-        await _dbContext.SaveChangesAsync();
+        dbContext.Categories.Remove(category);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return true;
     }
 
-    public async Task<(List<Category> Items, int TotalCount)> GetAllAsync(Guid userId, int pageNumber, int pageSize)
+    public async Task<(List<Category> Items, int TotalCount)> GetAllAsync(Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        var query = _dbContext.Categories
+        var query = dbContext.Categories
             .AsNoTracking()
             .Where(t => t.UserId == userId);
         
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
         
         var items = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
         
         return (items, totalCount);
     }
 
-    public async Task<Category?> GetByIdAsync(Guid id)
+    public async Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _dbContext.Categories.FindAsync(id);
+        return await dbContext.Categories.FindAsync(id, cancellationToken);
     }
+    
 }

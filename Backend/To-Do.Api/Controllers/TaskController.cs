@@ -9,9 +9,9 @@ namespace To_Do.Controllers;
 public class TaskController(IToDoService toDoService) : ApiController
 {
     [HttpGet("getTasks")]
-    public async Task<IActionResult> Get([FromQuery] int pageNumber, [FromQuery] int pageSize)
+    public async Task<IActionResult> Get([FromQuery] int pageNumber, [FromQuery] int pageSize, CancellationToken cancellationToken)
     {
-        var result = await toDoService.GetAll(pageNumber, pageSize);
+        var result = await toDoService.GetAll(pageNumber, pageSize, cancellationToken);
         
         return result.Match(
             getTasksResult => Ok(getTasksResult),
@@ -21,7 +21,7 @@ public class TaskController(IToDoService toDoService) : ApiController
     [HttpPost("search")]
     public async Task<IActionResult> GetByCategory(SearchTaskRequest searchTaskRequest, CancellationToken cancellationToken)
     {
-        var result = await toDoService.GetBySearch(searchTaskRequest);
+        var result = await toDoService.GetBySearch(searchTaskRequest, cancellationToken);
         
         return result.Match(
             getTasksByCatResult => Ok(getTasksByCatResult),
@@ -31,7 +31,7 @@ public class TaskController(IToDoService toDoService) : ApiController
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateTaskRequest taskRequest, CancellationToken cancellationToken)
     {
-        var result = await toDoService.Create(taskRequest);
+        var result = await toDoService.Create(taskRequest, cancellationToken);
         
         return result.Match(
             createTaskResult => Ok(createTaskResult),
@@ -41,7 +41,7 @@ public class TaskController(IToDoService toDoService) : ApiController
     [HttpPatch("update/{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateTaskRequest taskRequest, CancellationToken cancellationToken)
     {
-        var result = await toDoService.Update(taskRequest, id);
+        var result = await toDoService.Update(taskRequest, id, cancellationToken);
         
         return result.Match(
             updateTaskResult => Ok(updateTaskResult),
@@ -49,9 +49,9 @@ public class TaskController(IToDoService toDoService) : ApiController
     }
 
     [HttpDelete("delete/{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var result = await toDoService.Delete(id);
+        var result = await toDoService.Delete(id, cancellationToken);
         
         return result.Match(
             deleteTaskResult => Ok(deleteTaskResult),

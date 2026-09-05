@@ -7,13 +7,13 @@ namespace To_Do.Services.Services;
 
 public class CurrentUserId(IHttpContextAccessor httpContextAccessor) : ICurrentUserId
 {
-    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+
 
     public Guid UserId
     {
         get
         {
-            var userId = _httpContextAccessor.HttpContext?
+            var userId = httpContextAccessor.HttpContext?
                 .User
                 .FindFirstValue(JwtRegisteredClaimNames.Sub);
 

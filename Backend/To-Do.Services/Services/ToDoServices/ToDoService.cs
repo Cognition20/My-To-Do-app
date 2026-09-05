@@ -14,11 +14,11 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
 {
     private const int MaxPageSize = 10;
     
-    public async Task<ErrorOr<TaskResponse>> Create(CreateTaskRequest request)
+    public async Task<ErrorOr<TaskResponse>> Create(CreateTaskRequest request, CancellationToken cancellationToken)
     {
         if (request.CategoryId.HasValue)
         {
-            var category = await categoryRepository.GetByIdAsync(request.CategoryId.Value);
+            var category = await categoryRepository.GetByIdAsync(request.CategoryId.Value, cancellationToken);
 
             if (category is null || category.UserId != currentUserId.UserId)
                 return Errors.Category.NotFound(request.CategoryId.Value);
@@ -36,17 +36,17 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
             IsCompleted = false
         };
         
-        await toDoRepository.AddAsync(task);
+        await toDoRepository.AddAsync(task, cancellationToken);
 
         return task.ToResponse();
     }
 
-    public async Task<ErrorOr<PagedResponse<TaskResponse>>> GetAll(int pageNumber, int pageSize )
+    public async Task<ErrorOr<PagedResponse<TaskResponse>>> GetAll(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
         pageNumber = Math.Max(1, pageNumber);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
         
-        var (items, totalCount) = await toDoRepository.GetAllAsync(currentUserId.UserId,  pageNumber, pageSize);
+        var (items, totalCount) = await toDoRepository.GetAllAsync(currentUserId.UserId,  pageNumber, pageSize, cancellationToken);
 
         return new PagedResponse<TaskResponse>(
             items.ToResponseList().ToList(),
@@ -56,12 +56,17 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
             (int)Math.Ceiling(totalCount / (double)pageSize));
     }
 
-    public async Task<ErrorOr<PagedResponse<TaskResponse>>> GetBySearch(SearchTaskRequest request)
+    public async Task<ErrorOr<PagedResponse<TaskResponse>>> GetBySearch(SearchTaskRequest request, CancellationToken cancellationToken)
     {
         var pageNumber = Math.Max(1, request.PageNumber);
         var pageSize = request.PageSize;
         
-        var (items, totalCount) = await toDoRepository.SearchAsync(currentUserId.UserId, request.CategoryName, request.CategoryId, request.PageNumber, request.PageSize);
+        var (items, totalCount) = await toDoRepository.SearchAsync(currentUserId.UserId, 
+            request.CategoryName, 
+            request.CategoryId, 
+            request.PageNumber, 
+            request.PageSize, 
+            cancellationToken);
         
         return new PagedResponse<TaskResponse>(
             items.ToResponseList().ToList(),
@@ -71,16 +76,16 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
             (int)Math.Ceiling(totalCount / (double)pageSize));
     }
 
-    public async Task<ErrorOr<TaskResponse>> Update(UpdateTaskRequest request, Guid taskId)
+    public async Task<ErrorOr<TaskResponse>> Update(UpdateTaskRequest request, Guid taskId, CancellationToken cancellationToken)
     {
-        var task = await toDoRepository.GetByIdAsync(currentUserId.UserId, taskId);
+        var task = await toDoRepository.GetByIdAsync(currentUserId.UserId, taskId, cancellationToken);
 
         if (task is null || task.UserId != currentUserId.UserId)
             return Errors.ToDo.NotFound();
 
         if (request.CategoryId.HasValue)
         {
-            var category = await categoryRepository.GetByIdAsync(request.CategoryId.Value);
+            var category = await categoryRepository.GetByIdAsync(request.CategoryId.Value,  cancellationToken);
             if (category is null || category.UserId != currentUserId.UserId)
                 return Errors.Category.NotFound(request.CategoryId.Value);
         }
@@ -91,15 +96,15 @@ public class ToDoService(IToDoRepository toDoRepository, ICurrentUserId currentU
         task.UpdatedAtUtc = DateTimeOffset.UtcNow;
         task.IsCompleted = request.IsCompleted ?? false;
 
-        await toDoRepository.UpdateAsync(task);
+        await toDoRepository.UpdateAsync(task, cancellationToken);
 
         return task.ToResponse();
         
     }
 
-    public async Task<ErrorOr<Deleted>> Delete(Guid id)
+    public async Task<ErrorOr<Deleted>> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await toDoRepository.DeleteAsync(currentUserId.UserId, id);
+        var deleted = await toDoRepository.DeleteAsync(currentUserId.UserId, id, cancellationToken);
 
         if (!deleted)
             return Errors.ToDo.NotFound();
