@@ -58,16 +58,16 @@
   } @else if (tasks().length === 0) {
     <p class="text-gray-500">No tasks found.</p>
   } @else {
-    <ul class="space-y-2 flex-1">
+    <ul class="space-y-2 flex-1 break-all">
       @for (task of tasks(); track task.id) {
         <li  (click)="selectTask(task)"
              class="bg-white rounded-md p-4 shadow-sm flex items-center justify-between"
              [class.ring-2]="selectedTaskId() === task.id"
              [class.ring-purple-500]="selectedTaskId() === task.id">
           <div>
-            <p class="font-medium" [class.line-through]="task.isCompleted">{{ task.title }}</p>
+            <p class="font-medium" [class.line-through]="task.isCompleted">{{ task.title | slice: 0: 20 }}{{task.title.length > 24 ? '...' : ''}}</p>
             @if (task.description) {
-              <p class="text-sm text-gray-500">{{ task.description | slice: 0 : 20 }}{{ task.description.length > 30 ? '...' : '' }}</p>
+              <p class="text-sm text-gray-500">{{ task.description | slice: 0 : 20 }}{{ task.description.length > 10 ? '...' : '' }}</p>
             }
             <div class="flex items-center gap-2 mt-1">
                 <span class="text-xs bg-purple-100 text-purple-800 rounded-full px-2 py-0.5">

@@ -20,14 +20,14 @@ export class Register {
     private router: Router,
   ) {
     this.form = this.fb.group({
-      login: ['', Validators.required],
+      login: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(36)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(28)]],
     });
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
@@ -35,7 +35,11 @@ export class Register {
     this.authService.register(this.form.getRawValue() as any).subscribe({
       next: () => this.router.navigate(['/tasks']),
       error: (err) => {
-        this.errorMessage.set(err.error?.title ?? 'Registration failed.');
+        const errors = err.error?.errors;
+
+        const validationError = errors ? Object.values(errors).flat()[0] : null;
+
+        this.errorMessage.set(validationError ?? err.error?.title ?? 'Registration failed.');
         this.isLoading.set(false);
       },
     });

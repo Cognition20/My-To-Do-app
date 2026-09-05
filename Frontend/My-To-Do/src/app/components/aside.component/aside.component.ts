@@ -63,7 +63,8 @@ export class AsideComponent {
         this.editName.set('');
       },
       error: (err) => {
-        this.errorMessage.set(err.error?.title ?? 'Failed to update category.');
+        const errors = err.error?.errors;
+        this.errorMessage.set(errors?.Name?.[0] ?? err.error?.title ?? 'Failed to update category.');
       },
     });
   }
@@ -93,7 +94,12 @@ export class AsideComponent {
         this.showNewCategoryInput.set(false);
       },
       error: (err) => {
-        this.errorMessage.set(err.error?.title ?? 'Failed to create category.');
+        const errors = err.error?.errors;
+        this.errorMessage.set(
+          errors?.Name?.[0] ??
+          err.error?.title ??
+          'Failed to create category.'
+        );
       },
     });
   }

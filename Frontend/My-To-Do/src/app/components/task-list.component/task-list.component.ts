@@ -60,7 +60,10 @@ export class TaskListComponent {
           this.tasksChanged.emit(updatedTask);
         },
         error: (err) => {
-          this.errorMessage.set(err.error?.title ?? 'Failed to update task.');
+          const errors = err.error?.errors;
+
+          const validationError = errors ? Object.values(errors).flat()[0] : null;
+          this.errorMessage.set(validationError ?? err.error?.title ?? 'Failed to update task.');
 
           (event.target as HTMLInputElement).checked = task.isCompleted;
         },
@@ -89,8 +92,12 @@ export class TaskListComponent {
           this.taskCreated.emit();
         },
         error: (err) => {
-          this.errorMessage.set(err.error?.title ?? 'Failed to create task.');
-        },
+          const errors = err.error?.errors;
+
+          const validationError = errors ? Object.values(errors).flat()[0] : null;
+
+          this.errorMessage.set(validationError ?? err.error?.title ?? 'Failed to create task.');
+          },
       });
   }
 }

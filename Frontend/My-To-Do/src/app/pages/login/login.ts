@@ -22,12 +22,11 @@ export class Login {
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(28)]],
     });
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
@@ -35,7 +34,11 @@ export class Login {
     this.authService.login(this.form.getRawValue() as any).subscribe({
       next: () => this.router.navigate(['/tasks']),
       error: (err) => {
-        this.errorMessage.set(err.error?.title ?? 'Login failed. Check your credentials.');
+        const errors = err.error?.errors;
+
+        const validationError = errors ? Object.values(errors).flat()[0] : null;
+
+        this.errorMessage.set(validationError ?? err.error?.title ?? 'Login failed. Check your credentials.');
         this.isLoading.set(false);
       },
     });

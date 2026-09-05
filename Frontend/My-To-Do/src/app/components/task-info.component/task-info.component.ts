@@ -28,7 +28,7 @@ export class TaskInfoComponent {
 
   form = this.fb.group({
     title: ['', Validators.required],
-    description: [''],
+    description: ['', Validators.maxLength(200)],
     categoryId: [null as string | null],
   });
 
@@ -43,11 +43,6 @@ export class TaskInfoComponent {
   }
 
   saveEdit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
     const value = this.form.getRawValue();
     this.errorMessage.set(null);
 
@@ -64,7 +59,11 @@ export class TaskInfoComponent {
           this.tasksChanged.emit(updatedTask);
         },
         error: (err) => {
-          this.errorMessage.set(err.error?.title ?? 'Failed to update task.');
+          const errors = err.error?.errors;
+
+          const validationError = errors ? Object.values(errors).flat()[0] : null;
+
+          this.errorMessage.set(validationError ?? err.error?.title ?? 'Failed to update task.');
         },
       });
   }
